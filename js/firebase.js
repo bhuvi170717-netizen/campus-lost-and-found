@@ -1,14 +1,16 @@
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import {
     getFirestore,
     collection,
     addDoc,
     getDocs,
+    getDoc,
+    doc,
     query,
     orderBy,
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+
 
 const firebaseConfig = {
     apiKey: "AIzaSyDv_Wka8Z52CogHeuxYzCu0RFBbm1uIlyY",
@@ -77,6 +79,29 @@ export async function getPosts() {
 
     } catch (error) {
         console.error("Error getting posts:", error);
+        throw error;
+    }
+}
+// ===============================
+// GET ONE POST
+// ===============================
+
+export async function getPostById(id) {
+    try {
+        const postRef = doc(db, "posts", id);
+        const snapshot = await getDoc(postRef);
+
+        if (!snapshot.exists()) {
+            return null;
+        }
+
+        return {
+            id: snapshot.id,
+            ...snapshot.data()
+        };
+
+    } catch (error) {
+        console.error("Error getting post:", error);
         throw error;
     }
 }
