@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Campus Lost & Found</title>
+</head>
+
+<body>
+
+    <h1>Campus Lost & Found</h1>
+
+    <button id="testButton">
+        Add Test Item
+    </button>
+
+    <p id="status"></p>
+
+
+    <script type="module">
+
+        import { addPost } from "./js/firebase.js";
+
+
+        const button = document.getElementById("testButton");
+        const status = document.getElementById("status");
+
+
+        button.addEventListener("click", async () => {
+
+            status.textContent = "Adding item...";
+
+
+            try {
+
+                const id = await addPost({
+
+                    title: "Black Wallet",
+
+                    type: "lost",
+
+                    category: "Accessories",
+
+                    description: "Black leather wallet",
+
+                    location: "Library",
+
+                    date: "2026-10-07",
+
+                    contact: "9876543210",
+
+                    imageURL: ""
+
+                });
+
+
+                status.textContent =
+                    "Item added successfully! ID: " + id;
+
+            } catch (error) {
+
+                status.textContent =
+                    "Error adding item. Check console.";
+
+                console.error(error);
+
+            }
+
+        });
+
+    </script>
+
+</body>
+
+</html>
