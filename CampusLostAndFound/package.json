@@ -1,0 +1,20 @@
+{
+  "name": "reva-campus-lost-and-found",
+  "version": "1.0.0",
+  "description": "Apple HIG-inspired Campus Lost & Found Board for REVA University, Yelahanka, Bangalore",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "reva-university",
+    "lost-and-found",
+    "apple-hig",
+    "leaflet",
+    "hackathon"
+  ],
+  "author": "Antigravity & REVA Devs",
+  "license": "MIT"
+}

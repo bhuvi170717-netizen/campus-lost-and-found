@@ -1,0 +1,546 @@
+/* =====================================================================
+   APPLE HIG MODAL DIALOGS, DRAWERS, FORMS & TOASTS
+   ===================================================================== */
+
+/* --------------------------------------------------
+   MODAL BACKDROP & CONTAINER
+   -------------------------------------------------- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-normal), visibility var(--transition-normal);
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  background: var(--glass-surface-elevated);
+  border: 1px solid var(--glass-border-specular);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg), 0 0 50px rgba(0, 0, 0, 0.7);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.95) translateY(20px);
+  transition: transform var(--transition-spring);
+  scrollbar-width: thin;
+}
+
+.modal-overlay.active .modal-card {
+  transform: scale(1) translateY(0);
+}
+
+/* Specular border top glow */
+.modal-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.45) 50%, transparent 100%);
+  z-index: 10;
+}
+
+.modal-header {
+  padding: 1.5rem 1.75rem 1rem 1.75rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--glass-border);
+  position: sticky;
+  top: 0;
+  background: rgba(26, 26, 32, 0.95);
+  backdrop-filter: blur(20px);
+  z-index: 5;
+}
+
+.modal-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.modal-title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.modal-subtitle {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.btn-close-modal {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-close-modal:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #FFFFFF;
+}
+
+.modal-body {
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+}
+
+/* --------------------------------------------------
+   APPLE FORM CONTROLS & SEGMENTED SWITCHES
+   -------------------------------------------------- */
+.form-report-type-toggle {
+  display: flex;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill);
+  padding: 4px;
+}
+
+.type-toggle-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  transition: all var(--transition-fast);
+}
+
+.type-toggle-btn.active.lost {
+  background: linear-gradient(135deg, #FF453A 0%, #D70015 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(255, 69, 58, 0.45);
+}
+
+.type-toggle-btn.active.found {
+  background: linear-gradient(135deg, #30D158 0%, #248A3D 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(48, 209, 88, 0.45);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.form-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.form-label-desc {
+  font-size: 0.7rem;
+  font-weight: 400;
+  text-transform: none;
+  color: var(--text-tertiary);
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-family: inherit;
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--apple-blue);
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.25);
+}
+
+.form-select option {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* --------------------------------------------------
+   PHOTO UPLOAD ZONE & PRESETS
+   -------------------------------------------------- */
+.photo-upload-zone {
+  border: 2px dashed var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.2);
+  transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.photo-upload-zone:hover,
+.photo-upload-zone.dragover {
+  border-color: var(--apple-blue);
+  background: rgba(10, 132, 255, 0.08);
+}
+
+.upload-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--apple-blue);
+}
+
+.upload-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.upload-hint {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.photo-preview-wrap {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+}
+
+.photo-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.btn-remove-photo {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Quick Sample Photo Presets (for instant demo / testing) */
+.quick-samples-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+}
+
+.quick-samples-label {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+}
+
+.quick-samples-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.sample-preset-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.sample-preset-btn:hover {
+  background: var(--apple-blue-soft);
+  color: var(--apple-blue);
+  border-color: rgba(10, 132, 255, 0.4);
+}
+
+/* Modal Actions & Submit */
+.modal-footer {
+  padding: 1.25rem 1.75rem 1.5rem 1.75rem;
+  border-top: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  position: sticky;
+  bottom: 0;
+  background: rgba(26, 26, 32, 0.95);
+  backdrop-filter: blur(20px);
+}
+
+.btn-modal-cancel {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-modal-cancel:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+}
+
+.btn-modal-submit {
+  background: linear-gradient(135deg, var(--apple-blue) 0%, #005ce6 100%);
+  color: #FFFFFF;
+  border: none;
+  padding: 0.65rem 1.65rem;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  box-shadow: 0 4px 18px rgba(10, 132, 255, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: all var(--transition-fast);
+}
+
+.btn-modal-submit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(10, 132, 255, 0.55);
+}
+
+.btn-modal-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* --------------------------------------------------
+   CLAIM / VERIFICATION MODAL SPECIFICS
+   -------------------------------------------------- */
+.claim-item-summary {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  align-items: center;
+}
+
+.claim-summary-img {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.claim-summary-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.claim-summary-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.claim-summary-meta {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.whatsapp-action-card {
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  background: rgba(37, 211, 102, 0.12);
+  border: 1px solid rgba(37, 211, 102, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.whatsapp-action-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #25D366;
+  font-weight: 700;
+  font-size: var(--text-sm);
+}
+
+.whatsapp-action-text {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.btn-whatsapp-direct {
+  background: #25D366;
+  color: #052c11;
+  font-weight: 700;
+  border: none;
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
+}
+
+.btn-whatsapp-direct:hover {
+  background: #2ee672;
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------
+   DYNAMIC ISLAND / APPLE TOAST NOTIFICATIONS
+   -------------------------------------------------- */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.apple-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 1.35rem;
+  border-radius: var(--radius-pill);
+  background: rgba(18, 18, 24, 0.92);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid var(--glass-border-specular);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.3);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #FFFFFF;
+  animation: toastSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.apple-toast.success {
+  border-color: rgba(48, 209, 88, 0.5);
+}
+
+.apple-toast.success svg {
+  color: var(--apple-green);
+}
+
+.apple-toast.info {
+  border-color: rgba(10, 132, 255, 0.5);
+}
+
+.apple-toast.info svg {
+  color: var(--apple-blue);
+}
+
+@keyframes toastSlideDown {
+  0% { transform: translateY(-30px) scale(0.9); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@media (max-width: 640px) {
+  .form-row-2 {
+    grid-template-columns: 1fr;
+  }
+  .modal-card {
+    border-radius: var(--radius-lg);
+    max-height: 94vh;
+  }
+  .modal-header, .modal-body, .modal-footer {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+}

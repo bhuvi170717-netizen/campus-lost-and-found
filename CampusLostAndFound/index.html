@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>REVA Campus Lost & Found | Reunited at REVA University, Bangalore</title>
+  <meta name="description" content="Official student-driven Lost & Found portal for REVA University, Yelahanka, Bangalore. Quickly report, track, and reunite lost electronics, ID cards, keys, and campus belongings." />
+  <meta name="theme-color" content="#000000" />
+
+  <!-- Apple Touch & Favicon Meta -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧭</text></svg>" />
+
+  <!-- Google Fonts & Leaflet CSS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+  <!-- Application Stylesheets -->
+  <link rel="stylesheet" href="css/design-tokens.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/map.css" />
+  <link rel="stylesheet" href="css/modal.css" />
+</head>
+<body>
+
+  <!-- Dynamic Island Toast Notifications -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- Ambient Background & Ken Burns Aerial Campus Visual -->
+  <div class="campus-backdrop" aria-hidden="true">
+    <img
+      src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1920&q=80"
+      alt="REVA University Campus Aerial"
+      class="backdrop-image"
+    />
+    <div class="backdrop-gradient-overlay"></div>
+    <div class="ambient-orb ambient-orb-1"></div>
+    <div class="ambient-orb ambient-orb-2"></div>
+    <div class="ambient-orb ambient-orb-3"></div>
+  </div>
+
+  <!-- ==========================================
+       HEADER & TRANSLUCENT DOCK NAVBAR
+       ========================================== -->
+  <header class="app-header">
+    <div class="header-container">
+      
+      <!-- Brand Section -->
+      <a href="#" class="brand-section" aria-label="REVA Lost & Found Homepage">
+        <div class="brand-logo-container">
+          <span class="brand-logo-icon">R</span>
+        </div>
+        <div class="brand-info">
+          <div class="brand-title-wrap">
+            <h1 class="brand-title">REVA Lost &amp; Found</h1>
+            <span class="brand-campus-pill">Yelahanka</span>
+          </div>
+          <span class="brand-subtitle">REVA University &bull; Rukmini Knowledge Park</span>
+        </div>
+      </a>
+
+      <!-- Real-time Stats Ticker -->
+      <div class="header-ticker-wrap" aria-label="Live Campus Statistics">
+        <span class="ticker-pulse-dot"></span>
+        <div class="ticker-content">
+          <div class="ticker-item">
+            <span class="ticker-highlight" id="tickerReunited">14</span>
+            <span>Items Reunited</span>
+          </div>
+          <span style="opacity: 0.3;">&bull;</span>
+          <div class="ticker-item">
+            <span class="ticker-highlight" id="tickerActive">5</span>
+            <span>Active Reports Today</span>
+          </div>
+          <span style="opacity: 0.3;">&bull;</span>
+          <div class="ticker-item">
+            <span class="ticker-highlight" style="color: var(--apple-green);">94%</span>
+            <span>Recovery Rate</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Actions -->
+      <div class="header-actions">
+        <!-- View Mode Switcher -->
+        <div class="view-mode-toggle" role="tablist" aria-label="Layout View Modes">
+          <button type="button" class="view-btn active" data-view="split" title="Split Map & Feed View">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+            <span>Split</span>
+          </button>
+          <button type="button" class="view-btn" data-view="feed" title="Cards Feed Only">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <span>Feed</span>
+          </button>
+          <button type="button" class="view-btn" data-view="map" title="Interactive Map Explorer">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/></svg>
+            <span>Map</span>
+          </button>
+        </div>
+
+        <!-- Post Item Button (+ CTA) -->
+        <button type="button" id="openPostModalBtn" class="btn-post-item" aria-label="Report Lost or Found Item">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>Post Item</span>
+        </button>
+
+        <!-- Live Cloud Sync Status Pill -->
+        <button type="button" id="headerSyncBadge" class="brand-campus-pill" style="display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; border: 1px solid rgba(48,209,88,0.3); background: rgba(48,209,88,0.12); color: #30D158;" title="Click to view Cloud Sync settings">
+          <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #30D158;"></span>
+          <span id="headerSyncBadgeText">Cloud Sync</span>
+        </button>
+
+        <!-- Cloud Sync / Settings Icon -->
+        <button type="button" id="openSettingsBtn" class="btn-icon-round" title="Cloud Sync & Data Settings" aria-label="Settings">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ==========================================
+       HERO BANNER & CAMPUS STATS
+       ========================================== -->
+  <section class="hero-section">
+    <div class="hero-glass-card">
+      <div class="hero-layout">
+        
+        <div class="hero-content">
+          <div class="hero-pill-badge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span>Official REVA Student Community Board</span>
+          </div>
+
+          <h2 class="hero-heading">
+            Lost something on campus?<br />
+            <span class="gradient-text">Let's get it reunited with you.</span>
+          </h2>
+
+          <p class="hero-subtext">
+            Pinpoint lost belongings, student IDs, keys, calculators, and electronics across REVA University's 45-acre green campus in Yelahanka. Powered by interactive GPS geolocation and instant WhatsApp owner verification.
+          </p>
+
+          <div class="hero-quick-stats">
+            <div class="stat-item reunited">
+              <span class="stat-number" id="heroStatReunited">14</span>
+              <span class="stat-label">Items Reunited</span>
+            </div>
+            <div class="stat-item lost">
+              <span class="stat-number" id="heroStatLost">3</span>
+              <span class="stat-label">Active Lost Reports</span>
+            </div>
+            <div class="stat-item found">
+              <span class="stat-number" id="heroStatFound">3</span>
+              <span class="stat-label">Items Waiting for Claim</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Campus Landmarks Mini Panel -->
+        <div class="hero-landmarks-panel">
+          <div class="landmarks-panel-title">
+            <span>Explore Campus Landmarks</span>
+            <span style="font-size: 11px; color: var(--apple-blue);">Filter by Zone</span>
+          </div>
+          <div class="landmark-chip-list" id="landmarkFilterChips">
+            <!-- Dynamically populated chips -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       MAIN APP CONTAINER (MAP + FEED)
+       ========================================== -->
+  <main class="app-main">
+
+    <!-- Campus Interactive Map Section -->
+    <section class="campus-map-section" aria-label="Campus Locator Map">
+      <div class="map-header-bar">
+        <div class="map-title-wrap">
+          <div class="map-badge-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div>
+            <h3 class="map-title">Interactive REVA Campus Radar</h3>
+            <span class="map-coords">13.1167° N, 77.6346° E &bull; Yelahanka, Bangalore</span>
+          </div>
+        </div>
+
+        <div class="map-controls-group">
+          <button type="button" id="resetMapCenterBtn" class="map-btn-sm" title="Center at REVA Campus">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+            <span>Center Campus</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="map-wrapper">
+        <div id="revaCampusMap"></div>
+        <div class="map-legend-overlay">
+          <div class="legend-item">
+            <span class="legend-dot lost"></span>
+            <span>Lost Item</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot found"></span>
+            <span>Found Item</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot landmark"></span>
+            <span>Key Landmark</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Toolbar: Search & Segmented Filters -->
+    <section class="toolbar-section">
+      <div class="toolbar-primary">
+        
+        <!-- Search Input with Apple Shortcut -->
+        <div class="search-input-wrap">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input
+            type="search"
+            id="itemSearchInput"
+            class="search-input"
+            placeholder="Search AirPods, ID card, keys, calculator, backpack..."
+            aria-label="Search lost and found items"
+          />
+          <kbd class="search-shortcut-badge">⌘K</kbd>
+        </div>
+
+        <!-- Apple Segmented Type Control -->
+        <div class="segmented-control" role="tablist">
+          <button type="button" class="segment-btn active" data-type="all">
+            <span>All Items</span>
+            <span class="count-badge" id="countAllItems">8</span>
+          </button>
+          <button type="button" class="segment-btn" data-type="lost">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span>Lost</span>
+            <span class="count-badge" id="countLostItems">4</span>
+          </button>
+          <button type="button" class="segment-btn" data-type="found">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Found</span>
+            <span class="count-badge" id="countFoundItems">4</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Category Filter Chips -->
+      <div class="toolbar-categories" id="categoryChipsBar">
+        <!-- Rendered dynamically in app.js -->
+      </div>
+
+      <!-- Secondary Toolbar: Results Count & Sort Dropdown -->
+      <div class="toolbar-secondary">
+        <div class="results-count" id="resultsCountSpan">
+          Showing <strong>8</strong> items
+        </div>
+        <div class="sort-select-wrap">
+          <label for="sortBySelect" style="color: var(--text-tertiary);">Sort:</label>
+          <select id="sortBySelect" class="sort-select">
+            <option value="newest">Recently Reported</option>
+            <option value="oldest">Oldest First</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Item Cards Feed Grid -->
+    <section class="items-grid-section">
+      <div class="items-grid" id="itemsGrid">
+        <!-- Item cards injected dynamically by app.js -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================
+       MODAL: POST ITEM FORM (APPLE BLUR DRAWER)
+       ========================================== -->
+  <div class="modal-overlay" id="postItemModal" role="dialog" aria-modal="true" aria-labelledby="postModalTitle">
+    <div class="modal-card">
+      
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3 class="modal-title" id="postModalTitle">Report a Lost Item</h3>
+          <span class="modal-subtitle">Post a report to the REVA University campus bulletin</span>
+        </div>
+        <button type="button" class="btn-close-modal" aria-label="Close dialog">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <form id="postItemForm">
+        <div class="modal-body">
+          
+          <!-- Segmented Toggle: Lost vs Found -->
+          <div class="form-group">
+            <label class="form-label">Report Category</label>
+            <div class="form-report-type-toggle">
+              <button type="button" id="typeToggleLost" class="type-toggle-btn active lost">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>I Lost an Item</span>
+              </button>
+              <button type="button" id="typeToggleFound" class="type-toggle-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>I Found an Item</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Title & Category Row -->
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="itemTitleInput" class="form-label">Item Title *</label>
+              <input type="text" id="itemTitleInput" class="form-input" placeholder="e.g. Blue Wildcraft Backpack" required />
+            </div>
+
+            <div class="form-group">
+              <label for="itemCategorySelect" class="form-label">Category *</label>
+              <select id="itemCategorySelect" class="form-select" required>
+                <option value="" disabled selected>Select Category</option>
+                <option value="electronics">Electronics &amp; Gadgets</option>
+                <option value="documents">Documents &amp; Student ID</option>
+                <option value="keys">Keys &amp; Rings</option>
+                <option value="clothing">Watches &amp; Accessories</option>
+                <option value="bags">Bags &amp; Wallets</option>
+                <option value="books">Books &amp; Stationery</option>
+                <option value="others">Other Miscellaneous</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Campus Landmark & Specific Location -->
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="itemLandmarkSelect" class="form-label">Campus Landmark *</label>
+              <select id="itemLandmarkSelect" class="form-select" required>
+                <!-- Populated dynamically with REVA landmarks -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="itemLocationDetailInput" class="form-label">Specific Spot Details</label>
+              <input type="text" id="itemLocationDetailInput" class="form-input" placeholder="e.g. 2nd Floor Silent Room, Table 12" />
+            </div>
+          </div>
+
+          <!-- Hidden Coordinates -->
+          <input type="hidden" id="itemLatInput" value="13.1167" />
+          <input type="hidden" id="itemLngInput" value="77.6346" />
+
+          <!-- Description -->
+          <div class="form-group">
+            <label for="itemDescriptionInput" class="form-label">Description &amp; Distinctive Marks</label>
+            <textarea id="itemDescriptionInput" class="form-textarea" placeholder="Mention color, brand, stickers, scratches, or unique contents that confirm ownership..."></textarea>
+          </div>
+
+          <!-- Photo Upload Zone -->
+          <div class="form-group">
+            <label class="form-label">
+              <span>Item Photograph</span>
+              <span class="form-label-desc">Drop image or pick a demo sample</span>
+            </label>
+            
+            <input type="file" id="itemPhotoInput" accept="image/*" style="display: none;" />
+            
+            <div class="photo-upload-zone" id="photoDropZone">
+              <div class="upload-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              </div>
+              <span class="upload-title">Click to upload or drag photo here</span>
+              <span class="upload-hint">PNG, JPG or WEBP up to 5MB</span>
+            </div>
+
+            <div class="photo-preview-wrap" id="photoPreviewWrap" style="display: none;">
+              <img id="photoPreviewImg" class="photo-preview-img" src="" alt="Uploaded item preview" />
+              <button type="button" class="btn-remove-photo" id="removePhotoBtn" title="Remove image">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+
+            <!-- Quick Demo Sample Photos for Hackathon Evaluators -->
+            <div class="quick-samples-bar">
+              <span class="quick-samples-label">Quick Hackathon Demo Presets:</span>
+              <div class="quick-samples-pills" id="quickSamplePills">
+                <!-- Injected via modal.js -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Details (Apple Form Group) -->
+          <div class="form-group" style="padding-top: 0.5rem; border-top: 1px solid var(--glass-border);">
+            <label class="form-label">Reporter Contact Details</label>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="itemReporterNameInput" class="form-label">Your Name *</label>
+              <input type="text" id="itemReporterNameInput" class="form-input" placeholder="e.g. Abhinav V." required />
+            </div>
+
+            <div class="form-group">
+              <label for="itemReporterSrnInput" class="form-label">REVA SRN / Staff ID</label>
+              <input type="text" id="itemReporterSrnInput" class="form-input" placeholder="e.g. R22CS210" />
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="itemReporterPhoneInput" class="form-label">WhatsApp / Phone *</label>
+              <input type="tel" id="itemReporterPhoneInput" class="form-input" placeholder="+91 98765 43210" required />
+            </div>
+
+            <div class="form-group">
+              <label for="itemReporterEmailInput" class="form-label">College Email</label>
+              <input type="email" id="itemReporterEmailInput" class="form-input" placeholder="student@reva.edu.in" />
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-cancel">Cancel</button>
+          <button type="submit" id="postSubmitBtn" class="btn-modal-submit">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            <span>Post Report</span>
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL: CLAIM / VERIFY ITEM (WHATSAPP MODAL)
+       ========================================== -->
+  <div class="modal-overlay" id="claimItemModal" role="dialog" aria-modal="true" aria-labelledby="claimModalTitle">
+    <div class="modal-card">
+      
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3 class="modal-title" id="claimModalTitle">Claim Your Lost Item</h3>
+          <span class="modal-subtitle" id="claimModalSubtitle">Verify ownership and connect with the reporter</span>
+        </div>
+        <button type="button" class="btn-close-modal" aria-label="Close dialog">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        
+        <!-- Item Summary Banner -->
+        <div class="claim-item-summary">
+          <img id="claimItemImg" class="claim-summary-img" src="" alt="Item summary" />
+          <div class="claim-summary-details">
+            <h4 id="claimItemTitle" class="claim-summary-title">Item Title</h4>
+            <span id="claimItemMeta" class="claim-summary-meta">Campus Location</span>
+          </div>
+        </div>
+
+        <!-- Direct WhatsApp Connector Card -->
+        <div class="whatsapp-action-card">
+          <div class="whatsapp-action-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            <span id="claimWhatsAppText">Instant WhatsApp Connection</span>
+          </div>
+          <p class="whatsapp-action-text">
+            Start a direct WhatsApp conversation with the reporter to verify identifying details and coordinate a meetup spot on campus.
+          </p>
+          <a id="directWhatsAppBtn" href="#" target="_blank" class="btn-whatsapp-direct">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            <span>Open WhatsApp Chat</span>
+          </a>
+        </div>
+
+        <!-- Claim / Finder Contact Form -->
+        <form id="claimItemForm" style="display: flex; flex-direction: column; gap: 1rem;">
+          
+          <!-- Mode A: Ownership Verification Proof (Shown ONLY for FOUND items) -->
+          <div class="form-group" id="ownershipProofGroup">
+            <label for="claimProofInput" class="form-label">
+              <span>Proof of Ownership *</span>
+              <span class="form-label-desc">Security check</span>
+            </label>
+            <textarea
+              id="claimProofInput"
+              class="form-textarea"
+              placeholder="Describe confidential proof (e.g. lockscreen wallpaper, sticker placement, serial number, or exact contents inside)..."
+            ></textarea>
+          </div>
+
+          <!-- Mode B: Finder's Message / Drop-off Location (Shown for LOST items) -->
+          <div class="form-group" id="finderLocationGroup" style="display: none;">
+            <label for="finderLocationInput" class="form-label">
+              <span>Drop-off Location / Message</span>
+              <span class="form-label-desc">Optional</span>
+            </label>
+            <textarea
+              id="finderLocationInput"
+              class="form-textarea"
+              placeholder="e.g. Kept safely at Admin Block Security Desk / I have it with me in CV Raman Lab 304..."
+            ></textarea>
+          </div>
+
+          <!-- Contact Inputs -->
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="claimantNameInput" class="form-label" id="claimantNameLabel">Your Full Name *</label>
+              <input type="text" id="claimantNameInput" class="form-input" placeholder="Your Name" required />
+            </div>
+
+            <div class="form-group">
+              <label for="claimantPhoneInput" class="form-label" id="claimantPhoneLabel">Phone / WhatsApp Number *</label>
+              <input type="tel" id="claimantPhoneInput" class="form-input" placeholder="+91 98765 43210" required />
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+            <button type="submit" id="claimSubmitBtn" class="btn-action-primary claim-btn" style="padding: 0.75rem 1.25rem;">
+              Send Details
+            </button>
+            <button type="button" id="markAsReunitedBtn" class="btn-modal-cancel" style="border-color: rgba(48,209,88,0.4); color: var(--apple-green);">
+              Mark as Reunited &check;
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL: CLOUD SYNC & SYSTEM SETTINGS
+       ========================================== -->
+  <div class="modal-overlay" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
+    <div class="modal-card">
+      
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3 class="modal-title" id="settingsModalTitle">Cloud Sync &amp; Data Hub</h3>
+          <span class="modal-subtitle">Configure Firebase Firestore / Google Sheets API and local data</span>
+        </div>
+        <button type="button" class="btn-close-modal" aria-label="Close dialog">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        
+        <!-- Firebase Firestore & Storage Configuration Card -->
+        <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 1.15rem; display: flex; flex-direction: column; gap: 0.85rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-size: 1.1rem;">🔥</span>
+              <strong style="font-size: var(--text-sm);">Firebase Firestore &amp; Storage</strong>
+            </div>
+            <span id="firebaseStatusPill" class="status-pill found" style="font-size: 0.65rem; padding: 0.2rem 0.6rem;">
+              <span class="status-pulse-dot"></span>
+              <span id="firebaseStatusText">Local / Offline Mode</span>
+            </span>
+          </div>
+          <span style="font-size: 0.72rem; color: var(--text-secondary); line-height: 1.45;">
+            Real-time synchronization for all posts, claims, and photos. Enter your project credentials below to connect to live Cloud Firestore.
+          </span>
+
+          <form id="firebaseConfigForm" style="display: flex; flex-direction: column; gap: 0.65rem;">
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="fbProjectIdInput" class="form-label" style="font-size: 0.68rem;">Project ID</label>
+                <input type="text" id="fbProjectIdInput" class="form-input" placeholder="e.g. reva-lost-found" style="font-size: 0.8rem; padding: 0.5rem 0.75rem;" />
+              </div>
+              <div class="form-group">
+                <label for="fbApiKeyInput" class="form-label" style="font-size: 0.68rem;">API Key</label>
+                <input type="text" id="fbApiKeyInput" class="form-input" placeholder="AIzaSy..." style="font-size: 0.8rem; padding: 0.5rem 0.75rem;" />
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="fbStorageBucketInput" class="form-label" style="font-size: 0.68rem;">Storage Bucket</label>
+                <input type="text" id="fbStorageBucketInput" class="form-input" placeholder="project-id.appspot.com" style="font-size: 0.8rem; padding: 0.5rem 0.75rem;" />
+              </div>
+              <div class="form-group">
+                <label for="fbAppIdInput" class="form-label" style="font-size: 0.68rem;">App ID</label>
+                <input type="text" id="fbAppIdInput" class="form-input" placeholder="1:12345:web:abcd" style="font-size: 0.8rem; padding: 0.5rem 0.75rem;" />
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; margin-top: 0.25rem;">
+              <button type="submit" class="btn-action-primary claim-btn" style="flex: 1; padding: 0.5rem 0.85rem; font-size: 0.75rem;">
+                Connect to Live Firebase
+              </button>
+              <button type="button" id="resetFirebaseBtn" class="btn-modal-cancel" style="padding: 0.5rem 0.85rem; font-size: 0.75rem;">
+                Use Default Config
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Google Sheets API Sync Card -->
+        <form id="settingsForm" style="margin-top: 0.5rem;">
+          <div class="form-group">
+            <label for="settingsSheetsWebhook" class="form-label">
+              <span>Google Sheets Webhook / API URL</span>
+              <span class="form-label-desc">Optional secondary sync</span>
+            </label>
+            <input
+              type="url"
+              id="settingsSheetsWebhook"
+              class="form-input"
+              placeholder="https://script.google.com/macros/s/AKfyc.../exec"
+            />
+            <span style="font-size: 0.72rem; color: var(--text-tertiary);">
+              Connect your Google Apps Script webhook to mirror every post and claim in a Google Sheet.
+            </span>
+          </div>
+
+          <button type="submit" class="btn-modal-submit" style="margin-top: 0.5rem; width: 100%; justify-content: center; font-size: 0.8rem; padding: 0.55rem 1rem;">
+            Save Google Sheets Setting
+          </button>
+        </form>
+
+        <div style="padding-top: 1rem; border-top: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 0.75rem;">
+          <label class="form-label">Local Data &amp; Backup</label>
+          
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <button type="button" id="exportDataBtn" class="btn-modal-cancel">
+              Export Backup (JSON)
+            </button>
+            <label class="btn-modal-cancel" style="cursor: pointer; display: inline-flex; align-items: center;">
+              Import Backup
+              <input type="file" id="importDataInput" accept=".json" style="display: none;" />
+            </label>
+            <button type="button" id="resetDataBtn" class="btn-modal-cancel" style="color: var(--apple-red); border-color: rgba(255,69,58,0.3);">
+              Reset to Mock Data
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       FOOTER
+       ========================================== -->
+  <footer class="app-footer">
+    <div>
+      <strong>REVA Campus Lost &amp; Found</strong> &bull; Crafted for REVA University, Yelahanka, Bangalore
+    </div>
+    <div class="footer-links">
+      <a href="https://www.reva.edu.in" target="_blank" rel="noopener" class="footer-link">REVA Official Portal</a>
+      <a href="#revaCampusMap" class="footer-link">Campus Map</a>
+      <span style="opacity: 0.4;">Hackathon Edition 2026</span>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script type="module" src="js/app.js"></script>
+
+</body>
+</html>
